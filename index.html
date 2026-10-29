@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Флористка — помічник з букетів у Telegram</title>
+<meta name="description" content="Floristka — помічник у Telegram від квіткового магазину «Флористка». Допоможе підібрати букет для мами, тата, коханої людини чи друзів і оформити замовлення.">
+<meta property="og:title" content="Флористка — букет, який скаже більше за слова">
+<meta property="og:description" content="Помічник у Telegram, що допоможе підібрати букет і зробити комусь приємно.">
+<meta name="theme-color" content="#fbe4ea">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B7%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fffafb;
+    --blush:#fdeef2;
+    --petal:#fbe4ea;
+    --rose:#f4a7bb;
+    --rose-strong:#ea7f9b;
+    --rose-deep:#c95c7a;
+    --leaf:#9cc5a1;
+    --leaf-deep:#6fa077;
+    --ink:#4a2f38;
+    --ink-soft:#7c5f68;
+    --line:#f6d5de;
+    --white:#ffffff;
+    --radius:22px;
+    --shadow-soft:0 18px 40px -22px rgba(201,92,122,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:17px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img,svg{display:block;max-width:100%}
+  a{color:inherit}
+  h1,h2,h3{font-family:"Playfair Display",Georgia,serif;font-weight:600;line-height:1.2;margin:0;letter-spacing:-.01em}
+  h1 em,h2 em{font-style:italic;font-weight:500;color:var(--rose-deep)}
+  p{margin:0}
+  .wrap{width:min(1120px,100% - 32px);margin-inline:auto}
+
+  /* ---------- Кнопки, що "присідають" ---------- */
+  .btn{
+    --face:var(--rose-strong);
+    --edge:var(--rose-deep);
+    --text:#fff;
+    display:inline-flex;align-items:center;justify-content:center;gap:.6em;
+    font:800 1rem/1 "Nunito",sans-serif;
+    letter-spacing:.01em;
+    color:var(--text);
+    background:var(--face);
+    border:0;border-radius:999px;
+    padding:1.05em 1.7em;
+    text-decoration:none;
+    cursor:pointer;
+    position:relative;
+    transform:translateY(0);
+    box-shadow:0 6px 0 var(--edge),0 14px 24px -10px rgba(201,92,122,.55);
+    transition:transform .14s cubic-bezier(.3,.7,.4,1.5),box-shadow .14s ease,background .2s ease;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+  }
+  .btn:hover{
+    transform:translateY(4px);
+    box-shadow:0 2px 0 var(--edge),0 6px 12px -8px rgba(201,92,122,.5);
+  }
+  .btn:active{
+    transform:translateY(6px);
+    box-shadow:0 0 0 var(--edge),0 2px 6px -4px rgba(201,92,122,.5);
+    transition-duration:.05s;
+  }
+  .btn:focus-visible{outline:3px solid var(--rose-deep);outline-offset:5px}
+  .btn svg{width:1.2em;height:1.2em;flex:none}
+  .btn--soft{
+    --face:var(--white);
+    --edge:var(--line);
+    --text:var(--rose-deep);
+    box-shadow:0 6px 0 var(--edge),0 14px 24px -14px rgba(201,92,122,.35);
+  }
+  .btn--soft:hover{box-shadow:0 2px 0 var(--edge),0 6px 12px -10px rgba(201,92,122,.35)}
+  .btn--sm{padding:.8em 1.25em;font-size:.92rem}
+  .btn--lg{padding:1.2em 2.1em;font-size:1.08rem}
+
+  /* ---------- Шапка ---------- */
+  header{
+    position:sticky;top:0;z-index:20;
+    background:rgba(255,250,251,.82);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border-bottom:1px solid transparent;
+    transition:border-color .2s;
+  }
+  header.scrolled{border-bottom-color:var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
+  .logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:"Playfair Display",serif;font-size:1.45rem;font-weight:600}
+  .logo-mark{width:38px;height:38px}
+  .nav-links{display:flex;gap:28px;list-style:none;margin:0;padding:0;font-weight:700;font-size:.95rem;color:var(--ink-soft)}
+  .nav-links a{text-decoration:none;transition:color .2s}
+  .nav-links a:hover{color:var(--rose-deep)}
+
+  /* ---------- Hero ---------- */
+  html{overflow-x:clip}
+  .hero{position:relative;padding:64px 0 96px;overflow-x:clip}
+  .hero::before{
+    content:"";position:absolute;inset:-120px -10% auto auto;width:620px;height:620px;
+    background:radial-gradient(closest-side,var(--petal),transparent 70%);
+    z-index:-1;
+  }
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+  .tag{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--white);border:1px solid var(--line);
+    color:var(--rose-deep);font-weight:700;font-size:.88rem;
+    padding:7px 14px;border-radius:999px;margin-bottom:22px;
+  }
+  .tag-dot{width:8px;height:8px;border-radius:50%;background:var(--leaf-deep);box-shadow:0 0 0 4px rgba(156,197,161,.3)}
+  .hero h1{font-size:clamp(2.3rem,5vw,3.7rem);margin-bottom:22px}
+  .hero .lead{font-size:1.13rem;color:var(--ink-soft);max-width:34em;margin-bottom:34px}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:18px 16px;align-items:center}
+  .hero-note{margin-top:26px;font-size:.92rem;color:var(--ink-soft);display:flex;gap:8px;align-items:center}
+  .hero-art{position:relative;aspect-ratio:1/1;max-width:460px;margin-left:auto;width:100%}
+  .hero-art .halo{position:absolute;inset:6%;border-radius:50%;background:var(--blush);border:2px dashed var(--line)}
+  .hero-art svg.bouquet{position:relative;width:100%;height:100%;animation:sway 7s ease-in-out infinite;transform-origin:50% 90%}
+  @keyframes sway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+  .float-note{
+    position:absolute;background:var(--white);border:1px solid var(--line);border-radius:16px;
+    padding:10px 14px;font-size:.88rem;font-weight:700;box-shadow:var(--shadow-soft);
+    display:flex;align-items:center;gap:8px;white-space:nowrap;
+  }
+  .float-note.n1{left:-4%;top:16%;animation:bob 5s ease-in-out infinite}
+  .float-note.n2{right:-2%;bottom:14%;animation:bob 6s ease-in-out infinite .8s}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+  /* ---------- Пелюстки ---------- */
+  .petals{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .petal{
+    position:absolute;top:-30px;width:14px;height:11px;
+    background:var(--rose);border-radius:80% 0 80% 0;opacity:.45;
+    animation:fall linear infinite;
+  }
+  @keyframes fall{
+    0%{transform:translate(0,-20px) rotate(0)}
+    100%{transform:translate(80px,110vh) rotate(540deg)}
+  }
+
+  /* ---------- Секції ---------- */
+  section{position:relative;z-index:1}
+  .section{padding:88px 0}
+  .section-head{text-align:center;max-width:640px;margin:0 auto 52px}
+  .eyebrow{display:block;color:var(--rose-deep);font-weight:800;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+  .section-head h2{font-size:clamp(1.9rem,3.6vw,2.6rem);margin-bottom:14px}
+  .section-head p{color:var(--ink-soft)}
+
+  /* Для кого */
+  .who{background:linear-gradient(180deg,var(--bg),var(--blush) 30%,var(--blush) 70%,var(--bg))}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+  .card{
+    background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+    padding:28px 24px 26px;
+    box-shadow:0 7px 0 var(--line);
+    transform:translateY(0);
+    transition:transform .16s cubic-bezier(.3,.7,.4,1.5),box-shadow .16s ease;
+  }
+  .card:hover{transform:translateY(5px);box-shadow:0 2px 0 var(--line)}
+  .card-ico{
+    width:58px;height:58px;border-radius:18px;display:grid;place-items:center;
+    background:var(--blush);margin-bottom:18px;font-size:1.7rem;
+  }
+  .card h3{font-size:1.3rem;margin-bottom:8px}
+  .card p{color:var(--ink-soft);font-size:.97rem}
+
+  /* Як це працює */
+  .steps-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .steps{list-style:none;margin:0;padding:0;display:grid;gap:22px;counter-reset:s}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+  .step-num{
+    counter-increment:s;
+    width:46px;height:46px;border-radius:50%;
+    display:grid;place-items:center;
+    background:var(--white);border:2px solid var(--rose);
+    font-family:"Playfair Display",serif;font-weight:600;font-size:1.2rem;color:var(--rose-deep);
+  }
+  .step-num::before{content:counter(s)}
+  .step h3{font-size:1.22rem;margin:6px 0 4px}
+  .step p{color:var(--ink-soft)}
+
+  /* Чат */
+  .chat{
+    background:var(--white);border:1px solid var(--line);border-radius:28px;
+    box-shadow:var(--shadow-soft);overflow:hidden;max-width:430px;margin-inline:auto;width:100%;
+  }
+  .chat-top{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);background:var(--blush)}
+  .avatar{width:42px;height:42px;border-radius:50%;background:var(--white);display:grid;place-items:center;border:1px solid var(--line)}
+  .avatar svg{width:28px;height:28px}
+  .chat-top b{display:block;font-size:.98rem}
+  .chat-top small{color:var(--leaf-deep);font-weight:700}
+  .chat-body{padding:20px;display:flex;flex-direction:column;gap:10px;min-height:340px;
+    background-image:radial-gradient(var(--petal) 1px,transparent 1.5px);background-size:18px 18px}
+  .msg{max-width:84%;padding:10px 14px;border-radius:18px;font-size:.95rem;line-height:1.45;
+    opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease}
+  .msg.show{opacity:1;transform:none}
+  .msg.bot{background:var(--blush);border-bottom-left-radius:6px;align-self:flex-start}
+  .msg.me{background:var(--rose-strong);color:#fff;border-bottom-right-radius:6px;align-self:flex-end}
+  .typing{display:inline-flex;gap:4px;padding:12px 14px;background:var(--blush);border-radius:18px;border-bottom-left-radius:6px;align-self:flex-start}
+  .typing i{width:7px;height:7px;border-radius:50%;background:var(--rose);animation:blink 1s infinite}
+  .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+  @keyframes blink{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+  .chat-caption{text-align:center;font-size:.85rem;color:var(--ink-soft);margin-top:14px}
+
+  /* Поради */
+  .tips{background:var(--blush)}
+  .tips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .tip{background:var(--white);border-radius:var(--radius);padding:26px;border:1px solid var(--line)}
+  .tip .ico{font-size:1.5rem;margin-bottom:10px}
+  .tip h3{font-size:1.15rem;margin-bottom:6px}
+  .tip p{color:var(--ink-soft);font-size:.96rem}
+
+  /* FAQ */
+  .faq{max-width:760px;margin-inline:auto;display:grid;gap:14px}
+  details{
+    background:var(--white);border:1px solid var(--line);border-radius:18px;
+    padding:4px 22px;transition:background .2s;
+  }
+  details[open]{background:#fffdfd}
+  summary{
+    list-style:none;cursor:pointer;padding:16px 0;font-weight:800;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::after{
+    content:"+";flex:none;width:30px;height:30px;border-radius:50%;
+    display:grid;place-items:center;background:var(--blush);color:var(--rose-deep);
+    font-size:1.2rem;transition:transform .25s;
+  }
+  details[open] summary::after{transform:rotate(45deg)}
+  details p{color:var(--ink-soft);padding:0 0 18px}
+
+  /* Фінальний CTA */
+  .cta{
+    text-align:center;background:var(--white);border:1px solid var(--line);
+    border-radius:36px;padding:64px 28px;position:relative;overflow:hidden;
+    box-shadow:var(--shadow-soft);
+  }
+  .cta::before,.cta::after{content:"🌸";position:absolute;font-size:5rem;opacity:.18}
+  .cta::before{left:-10px;top:-14px;transform:rotate(-18deg)}
+  .cta::after{right:-6px;bottom:-18px;transform:rotate(22deg)}
+  .cta h2{font-size:clamp(1.9rem,3.8vw,2.7rem);margin-bottom:14px}
+  .cta p{color:var(--ink-soft);max-width:520px;margin:0 auto 32px}
+  .handle{display:block;margin-top:20px;font-weight:700;color:var(--ink-soft);font-size:.92rem}
+  .handle a{color:var(--rose-deep);text-decoration:none}
+  .handle a:hover{text-decoration:underline}
+
+  footer{padding:40px 0 48px;text-align:center;color:var(--ink-soft);font-size:.9rem}
+  footer .logo{justify-content:center;font-size:1.2rem;margin-bottom:8px}
+
+  /* Поява при скролі */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- Адаптив ---------- */
+  @media (max-width:960px){
+    .hero-grid,.steps-grid{grid-template-columns:1fr}
+    .hero-art{margin:0 auto;max-width:380px}
+    .cards{grid-template-columns:1fr 1fr}
+    .tips-grid{grid-template-columns:1fr}
+    .nav-links{display:none}
+  }
+  @media (max-width:560px){
+    body{font-size:16px}
+    .hero{padding:36px 0 64px}
+    .section{padding:64px 0}
+    .cards{grid-template-columns:1fr}
+    .hero-actions .btn{width:100%}
+    .float-note{font-size:.78rem;padding:8px 11px}
+    .float-note.n1{left:0;top:6%}
+    .float-note.n2{right:0;bottom:6%}
+    .nav .btn span.long{display:none}
+    .cta{padding:48px 20px;border-radius:28px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+    .reveal,.msg{opacity:1;transform:none}
+    .petals{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="petals" aria-hidden="true"></div>
+
+<header id="top">
+  <div class="wrap nav">
+    <a href="#top" class="logo" aria-label="Флористка — на початок">
+      <svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="19" fill="#fdeef2"/>
+        <path d="M20 31 V20" stroke="#6fa077" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M20 27 C15 26 13 23 13 21 C16 21 19 23 20 26" fill="#9cc5a1"/>
+        <path d="M13 13 C13 19 16 22 20 22 C24 22 27 19 27 13 C25 15 23 15 22.5 13.5 C21.8 11.5 20 10 20 10 C20 10 18.2 11.5 17.5 13.5 C17 15 15 15 13 13Z" fill="#ea7f9b"/>
+      </svg>
+      Флористка
+    </a>
+    <ul class="nav-links">
+      <li><a href="#who">Для кого</a></li>
+      <li><a href="#how">Як це працює</a></li>
+      <li><a href="#tips">Поради</a></li>
+      <li><a href="#faq">Питання</a></li>
+    </ul>
+    <a class="btn btn--sm" href="https://t.me/floristkajkgbnbot" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2 1.8 11.7c-1-.3-1-1 .2-1.5l18.4-7.1c.9-.3 1.6.2 1.5 1.2Z"/></svg>
+      <span>Відкрити <span class="long">бота</span></span>
+    </a>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="reveal">
+      <span class="tag"><span class="tag-dot"></span>Помічник у Telegram</span>
+      <h1>Букет, який скаже <em>більше за слова</em></h1>
+      <p class="lead">
+        Хочете порадувати маму, тата, кохану людину чи друга, але не знаєте, з чого почати?
+        Floristka — помічник квіткового магазину «Флористка» в Telegram. Він розпитає про людину й привід,
+        запропонує відповідні букети та допоможе оформити замовлення.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn--lg" href="https://t.me/floristkajkgbnbot" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2 1.8 11.7c-1-.3-1-1 .2-1.5l18.4-7.1c.9-.3 1.6.2 1.5 1.2Z"/></svg>
+          Написати Floristka
+        </a>
+        <a class="btn btn--soft btn--lg" href="#how">Як це працює</a>
+      </div>
+      <p class="hero-note">🌿 Без реєстрацій і застосунків — лише Telegram.</p>
+    </div>
+
+    <div class="hero-art reveal" aria-hidden="true">
+      <div class="halo"></div>
+      <svg class="bouquet" viewBox="0 0 400 400">
+        <!-- стебла -->
+        <g stroke="#6fa077" stroke-width="5" stroke-linecap="round" fill="none">
+          <path d="M200 330 L170 170"/><path d="M200 330 L230 165"/>
+          <path d="M200 330 L200 150"/><path d="M200 330 L140 200"/><path d="M200 330 L262 198"/>
+        </g>
+        <!-- листя -->
+        <g fill="#9cc5a1">
+          <path d="M150 210 C118 196 108 168 112 150 C138 160 152 184 150 210Z"/>
+          <path d="M252 208 C284 194 294 166 290 148 C264 158 250 182 252 208Z"/>
+          <path d="M200 205 C186 186 188 162 196 150 C210 166 210 188 200 205Z"/>
+        </g>
+        <!-- квіти -->
+        <g>
+          <circle cx="170" cy="160" r="38" fill="#f4a7bb"/>
+          <circle cx="170" cy="160" r="26" fill="#ea7f9b"/>
+          <path d="M158 160 C158 150 170 146 176 152 C182 158 176 168 168 166" stroke="#c95c7a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </g>
+        <g>
+          <circle cx="234" cy="152" r="34" fill="#fbe4ea"/>
+          <circle cx="234" cy="152" r="23" fill="#f4a7bb"/>
+          <path d="M224 152 C224 143 234 140 239 145 C244 150 239 159 232 157" stroke="#ea7f9b" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </g>
+        <g>
+          <circle cx="202" cy="112" r="34" fill="#ea7f9b"/>
+          <circle cx="202" cy="112" r="22" fill="#f4a7bb"/>
+          <path d="M192 112 C192 103 202 100 207 105 C212 110 207 119 200 117" stroke="#c95c7a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </g>
+        <g fill="#ffffff" stroke="#f6d5de" stroke-width="2">
+          <circle cx="134" cy="196" r="14"/><circle cx="268" cy="192" r="14"/>
+          <circle cx="146" cy="128" r="10"/><circle cx="258" cy="116" r="11"/>
+        </g>
+        <g fill="#f4a7bb"><circle cx="134" cy="196" r="5"/><circle cx="268" cy="192" r="5"/><circle cx="146" cy="128" r="4"/><circle cx="258" cy="116" r="4"/></g>
+        <!-- обгортка -->
+        <path d="M118 205 L200 345 L282 205 C252 226 226 232 200 232 C174 232 148 226 118 205Z" fill="#ffffff" stroke="#f6d5de" stroke-width="3"/>
+        <path d="M140 222 L200 345 L170 226Z" fill="#fdeef2"/>
+        <path d="M260 222 L200 345 L230 226Z" fill="#fdeef2"/>
+        <!-- бантик -->
+        <g fill="#ea7f9b">
+          <path d="M200 286 C184 270 166 276 170 290 C174 302 192 296 200 286Z"/>
+          <path d="M200 286 C216 270 234 276 230 290 C226 302 208 296 200 286Z"/>
+          <path d="M196 288 L186 318 L194 314 L200 290Z"/><path d="M204 288 L214 318 L206 314 L200 290Z"/>
+          <circle cx="200" cy="287" r="7" fill="#c95c7a"/>
+        </g>
+      </svg>
+      <div class="float-note n1">💌 Для мами</div>
+      <div class="float-note n2">🌷 Просто так</div>
+    </div>
+  </div>
+</section>
+
+<!-- ДЛЯ КОГО -->
+<section class="section who" id="who">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Для кого</span>
+      <h2>Кому хочеться <em>зробити приємно?</em></h2>
+      <p>Привід може бути будь-яким — свято, вибачення, подяка чи просто бажання нагадати людині, що вона важлива.</p>
+    </div>
+    <div class="cards">
+      <article class="card reveal">
+        <div class="card-ico">👩‍👦</div>
+        <h3>Мамі й татові</h3>
+        <p>Теплі, спокійні композиції, щоб сказати «дякую» без зайвих слів.</p>
+      </article>
+      <article class="card reveal">
+        <div class="card-ico">💗</div>
+        <h3>Коханій людині</h3>
+        <p>Для побачення, річниці чи ранку, який хочеться зробити особливим.</p>
+      </article>
+      <article class="card reveal">
+        <div class="card-ico">🎈</div>
+        <h3>Друзям</h3>
+        <p>Яскраві букети на день народження, новосілля чи нову роботу.</p>
+      </article>
+      <article class="card reveal">
+        <div class="card-ico">🌼</div>
+        <h3>Просто так</h3>
+        <p>Найприємніші квіти — ті, яких не чекали. Привід не обов'язковий.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ЯК ЦЕ ПРАЦЮЄ -->
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Як це працює</span>
+      <h2>Три кроки до <em>гарного букета</em></h2>
+      <p>Розмова з помічником нагадує переписку з уважним флористом: ви розповідаєте, він підказує.</p>
+    </div>
+    <div class="steps-grid">
+      <ol class="steps">
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true"></span>
+          <div>
+            <h3>Відкрийте бота в Telegram</h3>
+            <p>Натисніть кнопку на сторінці або знайдіть <b>@floristkajkgbnbot</b> у пошуку.</p>
+          </div>
+        </li>
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true"></span>
+          <div>
+            <h3>Розкажіть, кому й чому</h3>
+            <p>Хто ця людина, який привід, які кольори вона любить і на який бюджет ви орієнтуєтесь.</p>
+          </div>
+        </li>
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true"></span>
+          <div>
+            <h3>Оберіть і оформіть</h3>
+            <p>Помічник запропонує варіанти та підкаже, як оформити замовлення в магазині «Флористка».</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="reveal">
+        <div class="chat" aria-label="Приклад переписки з ботом">
+          <div class="chat-top">
+            <div class="avatar">
+              <svg viewBox="0 0 40 40" aria-hidden="true">
+                <path d="M20 31 V20" stroke="#6fa077" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M13 13 C13 19 16 22 20 22 C24 22 27 19 27 13 C25 15 23 15 22.5 13.5 C21.8 11.5 20 10 20 10 C20 10 18.2 11.5 17.5 13.5 C17 15 15 15 13 13Z" fill="#ea7f9b"/>
+              </svg>
+            </div>
+            <div><b>Floristka</b><small>онлайн</small></div>
+          </div>
+          <div class="chat-body" id="chat"></div>
+        </div>
+        <p class="chat-caption">Приклад розмови — відповіді бота можуть відрізнятися</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ПОРАДИ -->
+<section class="section tips" id="tips">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Кілька порад</span>
+      <h2>Що варто знати <em>перед вибором</em></h2>
+      <p>Не обов'язково, але з цими деталями помічнику буде легше підібрати саме те, що треба.</p>
+    </div>
+    <div class="tips-grid">
+      <div class="tip reveal">
+        <div class="ico">🎨</div>
+        <h3>Улюблені кольори</h3>
+        <p>Ніжні пастельні відтінки чи щось яскраве — навіть приблизна відповідь сильно звужує вибір.</p>
+      </div>
+      <div class="tip reveal">
+        <div class="ico">💬</div>
+        <h3>Кілька слів у листівці</h3>
+        <p>Коротке особисте побажання часто запам'ятовується не гірше за сам букет.</p>
+      </div>
+      <div class="tip reveal">
+        <div class="ico">⏰</div>
+        <h3>Подбайте заздалегідь</h3>
+        <p>Перед святами квіти розбирають швидше — краще написати за день-два.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Питання</span>
+      <h2>Часті <em>запитання</em></h2>
+    </div>
+    <div class="faq">
+      <details class="reveal">
+        <summary>Хто відповідає мені в чаті?</summary>
+        <p>Вам відповідає AI-помічник магазину «Флористка». Він розуміє звичайні повідомлення, тож писати можна так, як вам зручно — без команд і шаблонів.</p>
+      </details>
+      <details class="reveal">
+        <summary>Чи потрібно щось встановлювати?</summary>
+        <p>Ні. Достатньо Telegram на телефоні чи комп'ютері — бот відкривається одним натисканням.</p>
+      </details>
+      <details class="reveal">
+        <summary>Чи можна просто порадитись, нічого не замовляючи?</summary>
+        <p>Так. Можна спокійно розпитати про варіанти, кольори чи доречність букета до певного приводу — і вирішити пізніше.</p>
+      </details>
+      <details class="reveal">
+        <summary>Я зовсім не розбираюсь у квітах. Це проблема?</summary>
+        <p>Анітрохи. Помічник для того й існує: досить розповісти про людину та привід, а з назвами квітів і композицією він допоможе.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-top:24px">
+  <div class="wrap">
+    <div class="cta reveal">
+      <h2>Комусь сьогодні <em>стане тепліше</em></h2>
+      <p>Відкрийте Floristka в Telegram, розкажіть, кого хочете порадувати, — і разом підберемо букет.</p>
+      <a class="btn btn--lg" href="https://t.me/floristkajkgbnbot" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2 1.8 11.7c-1-.3-1-1 .2-1.5l18.4-7.1c.9-.3 1.6.2 1.5 1.2Z"/></svg>
+        Відкрити в Telegram
+      </a>
+      <span class="handle"><a href="https://t.me/floristkajkgbnbot" target="_blank" rel="noopener">@floristkajkgbnbot</a></span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="logo">🌷 Флористка</div>
+    <p>Помічник квіткового магазину «Флористка» в Telegram · © <span id="year">2026</span></p>
+  </div>
+</footer>
+
+<script>
+  // рік у футері
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // межа шапки при скролі
+  const header = document.querySelector('header');
+  const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 8);
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // поява секцій
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:.15});
+  document.querySelectorAll('.reveal').forEach((el,i) => {
+    el.style.transitionDelay = (i % 4) * 70 + 'ms';
+    io.observe(el);
+  });
+
+  // пелюстки
+  if (!reduce){
+    const box = document.querySelector('.petals');
+    const n = window.innerWidth < 600 ? 7 : 14;
+    for (let i = 0; i < n; i++){
+      const p = document.createElement('span');
+      p.className = 'petal';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.animationDuration = 12 + Math.random() * 12 + 's';
+      p.style.animationDelay = -Math.random() * 20 + 's';
+      const s = .6 + Math.random() * .8;
+      p.style.width = 14 * s + 'px'; p.style.height = 11 * s + 'px';
+      if (Math.random() > .6) p.style.background = '#fbe4ea';
+      box.appendChild(p);
+    }
+  }
+
+  // демо-чат
+  const script = [
+    ['me','Привіт! Хочу порадувати маму, у неї в суботу день народження 🌸'],
+    ['bot','Як гарно! Розкажіть трохи про маму: які кольори вона любить і чи є улюблені квіти?'],
+    ['me','Любить ніжні, світлі відтінки. Здається, півонії'],
+    ['bot','Тоді може підійти ніжна композиція з півоній або кущових троянд у пастельних тонах. Показати кілька варіантів?'],
+    ['me','Так, давайте 😊']
+  ];
+  const chat = document.getElementById('chat');
+  let started = false;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  async function play(){
+    for (const [who, text] of script){
+      if (who === 'bot' && !reduce){
+        const t = document.createElement('div');
+        t.className = 'typing'; t.innerHTML = '<i></i><i></i><i></i>';
+        chat.appendChild(t); await sleep(1100); t.remove();
+      }
+      const m = document.createElement('div');
+      m.className = 'msg ' + who; m.textContent = text;
+      chat.appendChild(m);
+      requestAnimationFrame(() => m.classList.add('show'));
+      await sleep(reduce ? 0 : 900);
+    }
+  }
+  new IntersectionObserver((e, o) => {
+    if (e[0].isIntersecting && !started){ started = true; play(); o.disconnect(); }
+  }, {threshold:.4}).observe(chat);
+</script>
+</body>
+</html>
